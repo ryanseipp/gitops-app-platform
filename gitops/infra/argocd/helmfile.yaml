@@ -13,6 +13,14 @@ releases:
         controller:
           replicas: 1
         server:
+          ingress:
+            enabled: true
+            tls: false
+            ingressClassName: tailscale
+            hostname: argocd.tail661100.ts.net
+            extraTls:
+              - hosts:
+                  - argocd.tail661100.ts.net
           autoscaling:
             enabled: true
             minReplicas: 2

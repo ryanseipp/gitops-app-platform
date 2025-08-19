@@ -59,6 +59,7 @@ resources:
   - helm/argo-cd/templates/argocd-server/clusterrole.yaml
   - helm/argo-cd/templates/argocd-server/deployment.yaml
   - helm/argo-cd/templates/argocd-server/hpa.yaml
+  - helm/argo-cd/templates/argocd-server/ingress.yaml
   - helm/argo-cd/templates/argocd-server/rolebinding.yaml
   - helm/argo-cd/templates/argocd-server/role.yaml
   - helm/argo-cd/templates/argocd-server/serviceaccount.yaml

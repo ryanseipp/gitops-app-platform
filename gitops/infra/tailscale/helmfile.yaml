@@ -1,0 +1,12 @@
+repositories:
+  - name: tailscale
+    url: https://pkgs.tailscale.com/helmcharts
+
+releases:
+  - chart: tailscale/tailscale-operator
+    name: tailscale
+    version: 1.86.2
+    namespace: tailscale
+    values:
+      - apiServerProxyConfig:
+          mode: "true"
