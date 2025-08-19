@@ -10,7 +10,7 @@ spec:
   listeners:
     - protocol: HTTPS
       port: 443
-      name: web-gw-https
+      name: argocd-https
       hostname: argocd.172.18.0.0.sslip.io
       allowedRoutes:
         namespaces:
@@ -21,7 +21,7 @@ spec:
           - name: argocd-sslip-io-tls
     - protocol: HTTPS
       port: 443
-      name: web-gw-https
+      name: hello-world-https
       hostname: hello-world.172.18.0.0.sslip.io
       allowedRoutes:
         namespaces:
