@@ -9,13 +9,23 @@ on:
   pull_request:
 
 jobs:
+  format-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Install Nix
+        uses: DeterminateSystems/nix-installer-action@90bb610b90bf290cad97484ba341453bd1cbefea # v19
+      - name: Setup Nix Cache
+        uses: DeterminateSystems/magic-nix-cache-action@565684385bcd71bad329742eefe8d12f2e765b39 # v13
+      - name: Check formatting
+        run: nix flake check --print-build-logs
+
   changes:
     runs-on: ubuntu-latest
     outputs:
       gitops: ${{ steps.changes.outputs.gitops_any_changed }}
       infra: ${{ steps.changes.outputs.infra_any_changed }}
       app: ${{ steps.changes.outputs.app_any_changed }}
-      any: ${{ steps.changes.outputs.any_any_changed }}
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
@@ -31,8 +41,6 @@ jobs:
             app:
               - app/**
               - .github/workflows/**
-            any:
-              - '**/*'
 
   build-and-push-app:
     runs-on: ubuntu-latest
@@ -97,7 +105,9 @@ jobs:
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@dc5a429b52fcf669ce959baa2c2dd26090d2a6c4 # v0.32.0
         with:
-          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
+          image-ref:
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{
+            steps.push.outputs.digest }}
           scan-type: image
           format: spdx-json
           output: sbom.json

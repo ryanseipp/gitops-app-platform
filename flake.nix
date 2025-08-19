@@ -47,6 +47,7 @@
             commonArgs = {
               src = craneLib.cleanCargoSource ./app;
               strictDeps = true;
+              nativeBuildInputs = [ pkgs.git ];
             };
 
             hello-world = craneLib.buildPackage (
