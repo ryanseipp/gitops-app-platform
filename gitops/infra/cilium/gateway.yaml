@@ -3,18 +3,30 @@ kind: Gateway
 metadata:
   name: default-gateway
   namespace: kube-system
+  annotations:
+    cert-manager.io/cluster-issuer: selfsigned-cluster-issuer
 spec:
   gatewayClassName: cilium
   listeners:
-    - protocol: HTTP
-      port: 80
-      name: web-gw-http
-      allowedRoutes:
-        namespaces:
-          from: All
     - protocol: HTTPS
       port: 443
       name: web-gw-https
+      hostname: argocd.172.18.0.0.sslip.io
       allowedRoutes:
         namespaces:
           from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: argocd-sslip-io-tls
+    - protocol: HTTPS
+      port: 443
+      name: web-gw-https
+      hostname: hello-world.172.18.0.0.sslip.io
+      allowedRoutes:
+        namespaces:
+          from: All
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: hello-world-sslip-io-tls
