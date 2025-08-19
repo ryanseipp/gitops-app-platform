@@ -115,6 +115,7 @@
                 argocd
                 cargo-watch
                 cilium-cli
+                go-task
                 helmfile
                 k9s
                 kind

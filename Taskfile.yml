@@ -1,0 +1,27 @@
+# https://taskfile.dev
+
+version: "3"
+
+vars:
+  GREETING: Hello, World!
+
+tasks:
+  up:
+    dir: infra
+    deps:
+      - template
+    cmds:
+      - tofu apply
+
+  down:
+    dir: infra
+    cmds:
+      - tofu destroy
+
+  template:
+    cmds:
+      - ./scripts/template-helm.sh
+
+  fd-tailnet:
+    cmds:
+      - grep -r '.*\.ts\.net' gitops

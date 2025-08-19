@@ -84,4 +84,4 @@ print_status "Processing complete!"
 print_status "Formatting..."
 
 # format templated files for consistency
-nix fmt
+nix fmt || echo "couldn't format as nix isn't installed"
