@@ -1,0 +1,20 @@
+repositories:
+  - name: cilium
+    url: https://helm.cilium.io/
+
+releases:
+  - chart: cilium/cilium
+    name: cilium
+    version: 1.18.1
+    namespace: kube-system
+    values:
+      - kubeProxyReplacement: true
+        gatewayAPI:
+          enabled: true
+        l2announcements:
+          enabled: true
+        hubble:
+          tls:
+            auto:
+              # TODO: generate this via `certmanager`
+              method: cronJob

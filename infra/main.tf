@@ -1,3 +1,8 @@
+# Reuse manifests templated from helm charts so they're consistent when ArgoCD bootstraps.
+# This also allows us to rerun TF as needed without worrying about breaking stuff in-cluster.
+data "kubectl_kustomize_documents" "cilium_manifests" {
+  target = "../gitops/infra/cilium"
+}
 # Create the cluster, with 1 control-plane node and 3 workers for HA
 resource "kind_cluster" "default" {
   name = "test-cluster"
@@ -48,3 +53,10 @@ resource "kind_cluster" "default" {
     }
   }
 }
+
+# Ensure we have a CNI installed so pods can run and access network resources
+resource "kubectl_manifest" "cilium" {
+  count     = length(data.kubectl_kustomize_documents.cilium_manifests.documents)
+  yaml_body = element(data.kubectl_kustomize_documents.cilium_manifests.documents, count.index)
+}
+
