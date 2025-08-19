@@ -8,5 +8,5 @@ resources:
   - ./httproute.yaml
   - ./service.yaml
 images:
-  - digest: sha256:6baae1197f34c7caffcc3a73d83e7cc3c52a851b05ecbe2bae3b14dbc8c10fe9
+  - digest: sha256:c18ab69136ccb5b170e3ca79f8bbe44f87e3b3c4b1718f0bd3b6238d84d10315
     name: ghcr.io/ryanseipp/gitops-app-platform
