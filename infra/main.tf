@@ -1,8 +1,13 @@
 # Reuse manifests templated from helm charts so they're consistent when ArgoCD bootstraps.
 # This also allows us to rerun TF as needed without worrying about breaking stuff in-cluster.
+data "kubectl_kustomize_documents" "argocd_manifests" {
+  target = "../gitops/infra/argocd"
+}
+
 data "kubectl_kustomize_documents" "cilium_manifests" {
   target = "../gitops/infra/cilium"
 }
+
 # Create the cluster, with 1 control-plane node and 3 workers for HA
 resource "kind_cluster" "default" {
   name = "test-cluster"
@@ -60,3 +65,13 @@ resource "kubectl_manifest" "cilium" {
   yaml_body = element(data.kubectl_kustomize_documents.cilium_manifests.documents, count.index)
 }
 
+# Bootstrap ArgoCD
+resource "kubectl_manifest" "argocd_namespace" {
+  yaml_body = element(data.kubectl_kustomize_documents.argocd_manifests.documents, 0)
+}
+resource "kubectl_manifest" "argocd" {
+  count     = length(data.kubectl_kustomize_documents.argocd_manifests.documents) - 1
+  yaml_body = element(data.kubectl_kustomize_documents.argocd_manifests.documents, count.index + 1)
+
+  depends_on = [kubectl_manifest.argocd_namespace]
+}

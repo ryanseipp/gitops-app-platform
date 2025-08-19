@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  generators:
+    - git:
+        repoURL: https://github.com/ryanseipp/gitops-app-platform.git
+        revision: HEAD
+        directories:
+          - path: gitops/infra/*
+  template:
+    metadata:
+      name: "{{ .path.basenameNormalized }}"
+    spec:
+      project: infra
+      source:
+        repoURL: https://github.com/ryanseipp/gitops-app-platform.git
+        targetRevision: HEAD
+        path: "{{ .path.path }}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: ""
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true
