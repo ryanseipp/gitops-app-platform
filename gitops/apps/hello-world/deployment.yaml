@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: hello-world
+    app.kubernetes.io/name: hello-world
+  name: hello-world
+  namespace: hello-world
+spec:
+  selector:
+    matchLabels:
+      app: hello-world
+      app.kubernetes.io/name: hello-world
+  template:
+    metadata:
+      labels:
+        app: hello-world
+        app.kubernetes.io/name: hello-world
+    spec:
+      serviceAccountName: hello-world
+      automountServiceAccountToken: false
+      containers:
+        - image: ghcr.io/ryanseipp/gitops-app-platform
+          name: gitops-app-platform
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          resources:
+            requests:
+              cpu: 100m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+          readinessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            httpGet:
+              path: /healthz
+              port: http
+          livenessProbe:
+            successThreshold: 1
+            failureThreshold: 3
+            initialDelaySeconds: 1
+            periodSeconds: 10
+            httpGet:
+              path: /livez
+              port: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: [ALL]
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault

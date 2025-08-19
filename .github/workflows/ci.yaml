@@ -20,41 +20,42 @@ jobs:
       - name: Check formatting
         run: nix flake check --print-build-logs
 
-  # changes:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     gitops: ${{ steps.changes.outputs.gitops_any_changed }}
-  #     infra: ${{ steps.changes.outputs.infra_any_changed }}
-  #     app: ${{ steps.changes.outputs.app_any_changed }}
-  #   steps:
-  #     - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-  #     - uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
-  #       id: filter
-  #       with:
-  #         files_yaml: |
-  #           gitops:
-  #             - gitops/**
-  #             - .github/workflows/**
-  #           infra:
-  #             - infra/**
-  #             - .github/workflows/**
-  #           app:
-  #             - app/**
-  #             - .github/workflows/**
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      gitops: ${{ steps.changes.outputs.gitops_any_changed }}
+      infra: ${{ steps.changes.outputs.infra_any_changed }}
+      app: ${{ steps.changes.outputs.app_any_changed }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: tj-actions/changed-files@ed68ef82c095e0d48ec87eccea555d944a631a4c # v46.0.5
+        id: filter
+        with:
+          files_yaml: |
+            gitops:
+              - gitops/**
+              - .github/workflows/**
+            infra:
+              - infra/**
+              - .github/workflows/**
+            app:
+              - app/**
+              - .github/workflows/**
 
   build-and-push-app:
     runs-on: ubuntu-latest
-    # needs: [changes]
-    # if: needs.changes.app == 'true'
+    needs: [changes]
+    if: needs.changes.outputs.app == 'true'
     permissions:
       id-token: write
       contents: read
       attestations: write
       packages: write
+    outputs:
+      digest: ${{ steps.push.outputs.digest }}
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}
-
     steps:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
       - uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
@@ -121,3 +122,33 @@ jobs:
           subject-digest: ${{ steps.push.outputs.digest }}
           sbom-path: sbom.json
           push-to-registry: ${{ github.event_name != 'pull_request' }}
+
+  deploy-app:
+    runs-on: ubuntu-latest
+    needs: [build-and-push-app]
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Update app digest
+        uses: mikefarah/yq@f03c9dc599c37bfcaf533427211d05e51e6fee64 # v4.47.1
+        env:
+          IMAGE_DIGEST: ${{ needs.build-and-push-app.outputs.digest }}
+        with:
+          cmd: |
+            yq -i '
+              (
+                .images[]
+                | select(.name = "ghcr.io/ryanseipp/gitops-app-platform")
+              )
+              |= .digest = env(IMAGE_DIGEST)
+            ' gitops/apps/hello-world/kustomization.yaml
+
+      - name: Commit and push
+        env:
+          IMAGE_DIGEST: ${{ needs.build-and-push-app.outputs.digest }}
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add gitops/apps/hello-world
+          git commit -m "Deploy hello-world version ${IMAGE_DIGEST}"
+          git push

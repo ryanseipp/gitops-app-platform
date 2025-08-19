@@ -13,8 +13,8 @@ RUN cargo build --release --target x86_64-unknown-linux-musl --bin hello-world
 
 
 FROM alpine:3.22@sha256:4bcff63911fcb4448bd4fdacec207030997caf25e9bea4045fa6c8c44de311d1 AS runtime
-RUN addgroup -S app && adduser -S app -G app
+RUN addgroup --gid 1000 -S app && adduser --uid 1000 -S app -G app
 COPY --from=builder app/target/x86_64-unknown-linux-musl/release/hello-world /usr/local/bin/
-USER app
+USER 1000
 EXPOSE 8080
 CMD ["/usr/local/bin/hello-world"]
