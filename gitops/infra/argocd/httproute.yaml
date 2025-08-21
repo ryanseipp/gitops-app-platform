@@ -7,7 +7,7 @@ spec:
   hostnames:
     - argocd.172.18.0.0.sslip.io
   parentRefs:
-    - name: argocd-gateway
+    - name: default-gateway
       namespace: kube-system
   rules:
     - matches:
