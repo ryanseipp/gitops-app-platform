@@ -133,7 +133,7 @@ jobs:
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
       - name: Update app digest
-        uses: mikefarah/yq@f03c9dc599c37bfcaf533427211d05e51e6fee64 # v4.47.1
+        uses: mikefarah/yq@6251e95af8df3505def48c71f3119836701495d6 # v4.47.2
         env:
           IMAGE_DIGEST: ${{ needs.build-and-push-app.outputs.digest }}
         with:
